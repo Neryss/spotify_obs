@@ -7,6 +7,7 @@
 #include <tlhelp32.h>
 
 std::wstring x_title;
+std::string	path_output = "./out.txt";
 
 bool found(const PROCESSENTRY32W &entry)
 {
@@ -69,7 +70,7 @@ int main()
 	EnumWindows(enumWindowsProc, reinterpret_cast<LPARAM>(&pids));
 	std::wcout << x_title << std::endl;
 
-	std::wofstream	output("./out.txt");
+	std::wofstream	output(path_output);
 	output << x_title << std::endl;
 	output.close();
 }
