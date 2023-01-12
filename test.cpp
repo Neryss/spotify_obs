@@ -2,10 +2,12 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include <windows.h>
 #include <tlhelp32.h>
 
+std::wstring current;
 std::wstring x_title;
 std::string	path_output = "./out.txt";
 
@@ -71,10 +73,14 @@ int main()
 
 		EnumWindows(enumWindowsProc, reinterpret_cast<LPARAM>(&pids));
 		std::wcout << x_title << std::endl;
-
-		std::wofstream	output(path_output);
-		output << x_title << std::endl;
-		output.close();
+		if (current != x_title)
+		{
+			std::cout << "diff" << std::endl;
+			std::wofstream	output(path_output);
+			output.write(x_title.c_str(), x_title.length() - 1);
+			output.close();
+			current = x_title;
+		}
 		Sleep(5000);
 	}
 }
