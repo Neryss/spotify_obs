@@ -82,12 +82,13 @@ int main()
 			output.close();
 			current = x_title;
 		}
-		else
+		else if (x_title == L"Spotify Premium")
 		{
 			std::cout << "Nothing currently playing, or window closed" << std::endl;
 			std::wofstream	output(path_output);
 			output << "";
 			output.close();
+			current = x_title;
 		}
 		Sleep(5000);
 	}
