@@ -36,6 +36,7 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 				// std::cout << "Process ID: " << pid << '\n';
 				// std::wcout << "Title: " << title << "\n\n";
 				x_title = title;
+				x_title.pop_back();
 				return FALSE;
 			}
 		}
@@ -73,13 +74,20 @@ int main()
 
 		EnumWindows(enumWindowsProc, reinterpret_cast<LPARAM>(&pids));
 		std::wcout << x_title << std::endl;
-		if (current != x_title)
+		if (current != x_title && x_title != L"Spotify Premium")
 		{
 			std::cout << "diff" << std::endl;
 			std::wofstream	output(path_output);
 			output.write(x_title.c_str(), x_title.length() - 1);
 			output.close();
 			current = x_title;
+		}
+		else
+		{
+			std::cout << "Nothing currently playing, or window closed" << std::endl;
+			std::wofstream	output(path_output);
+			output << "";
+			output.close();
 		}
 		Sleep(5000);
 	}
