@@ -44,33 +44,37 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 
 int main()
 {
-	std::vector<DWORD> pids;
-
-	HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	// Do use a proper RAII type for this so it's robust against exceptions and code changes.
-	auto cleanupSnap = [snap]
-	{ CloseHandle(snap); };
-
-	PROCESSENTRY32W entry;
-	entry.dwSize = sizeof entry;
-
-	if (!Process32FirstW(snap, &entry))
+	while(true)
 	{
+		std::vector<DWORD> pids;
+
+		HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+		// Do use a proper RAII type for this so it's robust against exceptions and code changes.
+		auto cleanupSnap = [snap]
+		{ CloseHandle(snap); };
+
+		PROCESSENTRY32W entry;
+		entry.dwSize = sizeof entry;
+
+		if (!Process32FirstW(snap, &entry))
+		{
+			cleanupSnap();
+			return 0;
+		}
+
+		do
+		{
+			if (found(entry))
+				pids.emplace_back(entry.th32ProcessID);
+		} while (Process32NextW(snap, &entry));
 		cleanupSnap();
-		return 0;
+
+		EnumWindows(enumWindowsProc, reinterpret_cast<LPARAM>(&pids));
+		std::wcout << x_title << std::endl;
+
+		std::wofstream	output(path_output);
+		output << x_title << std::endl;
+		output.close();
+		Sleep(5000);
 	}
-
-	do
-	{
-		if (found(entry))
-			pids.emplace_back(entry.th32ProcessID);
-	} while (Process32NextW(snap, &entry));
-	cleanupSnap();
-
-	EnumWindows(enumWindowsProc, reinterpret_cast<LPARAM>(&pids));
-	std::wcout << x_title << std::endl;
-
-	std::wofstream	output(path_output);
-	output << x_title << std::endl;
-	output.close();
 }
