@@ -6,6 +6,9 @@
 
 #include <windows.h>
 #include <tlhelp32.h>
+#include <locale.h>
+
+// std::setlocale(LC_ALL, "");
 
 std::wstring current;
 std::wstring x_title;
@@ -34,7 +37,7 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 			{
 				// std::cout << "Found window:\n";
 				// std::cout << "Process ID: " << pid << '\n';
-				// std::wcout << "Title: " << title << "\n\n";
+				std::wcout << "Title: " << title << "\n\n";
 				x_title = title;
 				x_title.pop_back();
 				return FALSE;
@@ -47,6 +50,9 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 
 int main()
 {
+	setlocale(LC_ALL, "");
+	// std::wstring	chinese(L"三");
+	// std::wcout << chinese << std::endl;
 	while(true)
 	{
 		std::vector<DWORD> pids;
@@ -73,13 +79,14 @@ int main()
 		cleanupSnap();
 
 		EnumWindows(enumWindowsProc, reinterpret_cast<LPARAM>(&pids));
-		std::wcout << x_title << std::endl;
 		if (current != x_title && x_title != L"Spotify Premium")
 		{
-			std::cout << "diff" << std::endl;
-			std::wofstream	output(path_output);
-			output.write(x_title.c_str(), x_title.length() - 1);
+			// https://stackoverflow.com/a/48826838/14512379
+			const uint16_t bom = 0xFEFF;
+			std::ofstream	output(path_output);
+			output.write(reinterpret_cast<const char*>(x_title.data()), x_title.size() * sizeof(wchar_t));
 			output.close();
+			std::cout << "here" << std::endl;
 			current = x_title;
 		}
 		else if (x_title == L"Spotify Premium")
