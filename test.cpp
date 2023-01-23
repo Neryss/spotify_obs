@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <codecvt>
 
 #include <windows.h>
 #include <tlhelp32.h>
@@ -82,9 +83,12 @@ int main()
 		if (current != x_title && x_title != L"Spotify Premium")
 		{
 			// https://stackoverflow.com/a/48826838/14512379
-			const uint16_t bom = 0xFEFF;
-			std::ofstream	output(path_output);
-			output.write(reinterpret_cast<const char*>(x_title.data()), x_title.size() * sizeof(wchar_t));
+			// const uint16_t bom = 0xFEFF;
+			std::wofstream	output(path_output);
+			// output.write(reinterpret_cast<const char*>(x_title.data()), x_title.size() * sizeof(wchar_t));
+			const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
+			output.imbue(utf8_locale);
+			output << x_title;
 			output.close();
 			std::cout << "here" << std::endl;
 			current = x_title;
