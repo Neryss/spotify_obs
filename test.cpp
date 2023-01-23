@@ -8,11 +8,11 @@
 #include <windows.h>
 #include <tlhelp32.h>
 #include <locale.h>
+#include <io.h>
+#include <fcntl.h>
 
-// std::setlocale(LC_ALL, "");
-
-std::wstring current;
-std::wstring x_title;
+std::wstring current = L"unknown";
+std::wstring x_title = L"unknown";
 std::string	path_output = "./out.txt";
 
 bool found(const PROCESSENTRY32W &entry)
@@ -36,9 +36,6 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 
 			if (title.length() > 1)
 			{
-				// std::cout << "Found window:\n";
-				// std::cout << "Process ID: " << pid << '\n';
-				std::wcout << "Title: " << title << "\n\n";
 				x_title = title;
 				x_title.pop_back();
 				return FALSE;
@@ -51,9 +48,7 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 
 int main()
 {
-	setlocale(LC_ALL, "");
-	// std::wstring	chinese(L"三");
-	// std::wcout << chinese << std::endl;
+	_setmode(_fileno(stdout),_O_U16TEXT);
 	while(true)
 	{
 		std::vector<DWORD> pids;
@@ -71,7 +66,6 @@ int main()
 			cleanupSnap();
 			return 0;
 		}
-
 		do
 		{
 			if (found(entry))
@@ -82,20 +76,19 @@ int main()
 		EnumWindows(enumWindowsProc, reinterpret_cast<LPARAM>(&pids));
 		if (current != x_title && x_title != L"Spotify Premium")
 		{
-			// https://stackoverflow.com/a/48826838/14512379
-			// const uint16_t bom = 0xFEFF;
 			std::wofstream	output(path_output);
-			// output.write(reinterpret_cast<const char*>(x_title.data()), x_title.size() * sizeof(wchar_t));
 			const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
 			output.imbue(utf8_locale);
 			output << x_title;
+			std::wcout << "\x1B[2J\x1B[H";
+			std::wcout << "currently playing: \n"  << x_title;
 			output.close();
-			std::cout << "here" << std::endl;
 			current = x_title;
 		}
-		else if (x_title == L"Spotify Premium")
+		else
 		{
-			std::cout << "Nothing currently playing, or window closed" << std::endl;
+			std::wcout << "\x1B[2J\x1B[H";
+			std::wcout << "Nothing currently playing, or window closed" << std::endl;
 			std::wofstream	output(path_output);
 			output << "";
 			output.close();
