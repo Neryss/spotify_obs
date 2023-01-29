@@ -36,9 +36,14 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 
 			if (title.length() > 1)
 			{
-				x_title = title;
-				x_title.pop_back();
-				return FALSE;
+				std::wstring tmp(title);
+				tmp.pop_back();
+				if (tmp != L"Default IME")
+				{
+					x_title = title;
+					x_title.pop_back();
+					return FALSE;
+				}
 			}
 		}
 	}
@@ -46,6 +51,29 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 	return TRUE;
 }
 
+void	writeToFile()
+{
+	std::wofstream	output(path_output);
+	const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
+	output.imbue(utf8_locale);
+	output << x_title;
+	std::wcout << "\x1B[2J\x1B[H";
+	std::wcout << "currently playing: \n"  << x_title;
+	output.close();
+	current = x_title;
+}
+
+void	noSong()
+{
+	std::wcout << "\x1B[2J\x1B[H";
+	std::wcout << "Nothing currently playing, or window closed" << std::endl;
+	std::wofstream	output(path_output);
+	output << "";
+	output.close();
+	current = x_title;
+}
+
+//	TODO: add subprocess to handle text display
 int main()
 {
 	_setmode(_fileno(stdout),_O_U16TEXT);
@@ -75,25 +103,9 @@ int main()
 
 		EnumWindows(enumWindowsProc, reinterpret_cast<LPARAM>(&pids));
 		if (current != x_title && x_title != L"Spotify Premium")
-		{
-			std::wofstream	output(path_output);
-			const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
-			output.imbue(utf8_locale);
-			output << x_title;
-			std::wcout << "\x1B[2J\x1B[H";
-			std::wcout << "currently playing: \n"  << x_title;
-			output.close();
-			current = x_title;
-		}
+			writeToFile();
 		else
-		{
-			std::wcout << "\x1B[2J\x1B[H";
-			std::wcout << "Nothing currently playing, or window closed" << std::endl;
-			std::wofstream	output(path_output);
-			output << "";
-			output.close();
-			current = x_title;
-		}
+			noSong();
 		Sleep(5000);
 	}
 }
