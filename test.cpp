@@ -39,7 +39,7 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 				std::wstring tmp(title);
 				tmp.pop_back();
 				printf("%s\n", tmp);
-				if (tmp != L"Default IME" && tmp != L"GDI+ Window" && tmp != L"MSCTFIME UI")
+				if (tmp != L"Default IME" && tmp != L"GDI+ Window (Spotify.exe)" && tmp != L"MSCTFIME UI")
 				{
 					x_title = title;
 					x_title.pop_back();
