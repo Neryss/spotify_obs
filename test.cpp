@@ -38,7 +38,8 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 			{
 				std::wstring tmp(title);
 				tmp.pop_back();
-				if (tmp != L"Default IME")
+				printf("%s\n", tmp);
+				if (tmp != L"Default IME" && tmp != L"GDI+ Window" && tmp != L"MSCTFIME UI")
 				{
 					x_title = title;
 					x_title.pop_back();
@@ -104,7 +105,7 @@ int main()
 		EnumWindows(enumWindowsProc, reinterpret_cast<LPARAM>(&pids));
 		if (current != x_title && x_title != L"Spotify Premium")
 			writeToFile();
-		else
+		else if (x_title == L"Spotify Premium")
 			noSong();
 		Sleep(5000);
 	}
