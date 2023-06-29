@@ -79,8 +79,12 @@ void	test()
 {
 	for (int i = 0; i < 1000; i++)
 	{
-		std::wcout << "HEY" << std::endl;
-		Sleep(1000);
+		std::wifstream ifs("out.txt");
+		std::wstring line;
+
+		while (std::getline(ifs, line))
+			std::wcout << "File content: " << line << std::endl;
+		Sleep(3000);
 	}
 }
 
