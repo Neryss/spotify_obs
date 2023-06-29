@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <codecvt>
+#include <thread>
 
 #include <windows.h>
 #include <tlhelp32.h>
@@ -66,7 +67,7 @@ void	writeToFile()
 
 void	noSong()
 {
-	std::wcout << "\x1B[2J\x1B[H";
+	// std::wcout << "\x1B[2J\x1B[H";
 	std::wcout << "Nothing currently playing, or window closed" << std::endl;
 	std::wofstream	output(path_output);
 	output << "";
@@ -74,10 +75,21 @@ void	noSong()
 	current = x_title;
 }
 
+void	test()
+{
+	for (int i = 0; i < 1000; i++)
+	{
+		std::wcout << "HEY" << std::endl;
+		Sleep(1000);
+	}
+}
+
 //	TODO: add subprocess to handle text display
 int main()
 {
 	_setmode(_fileno(stdout),_O_U16TEXT);
+	std::thread t1(test);
+	// t1.join();
 	while(true)
 	{
 		std::vector<DWORD> pids;
@@ -89,6 +101,7 @@ int main()
 
 		PROCESSENTRY32W entry;
 		entry.dwSize = sizeof entry;
+		std::cout << "Fack" << std::endl;
 
 		if (!Process32FirstW(snap, &entry))
 		{
@@ -101,7 +114,6 @@ int main()
 				pids.emplace_back(entry.th32ProcessID);
 		} while (Process32NextW(snap, &entry));
 		cleanupSnap();
-
 		EnumWindows(enumWindowsProc, reinterpret_cast<LPARAM>(&pids));
 		if (current != x_title && x_title != L"Spotify Premium")
 			writeToFile();
