@@ -59,7 +59,7 @@ void	writeToFile()
 	const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
 	output.imbue(utf8_locale);
 	output << x_title;
-	std::wcout << "\x1B[2J\x1B[H";
+	// std::wcout << "\x1B[2J\x1B[H";
 	std::wcout << "currently playing: \n"  << x_title;
 	output.close();
 	current = x_title;
@@ -77,15 +77,25 @@ void	noSong()
 
 void	test()
 {
-	for (int i = 0; i < 1000; i++)
+	std::wifstream ifs("out.txt");
+	std::wofstream output("test.txt");
+	std::wstring line;
+	const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
+	output.imbue(utf8_locale);
+	ifs.imbue(utf8_locale);
+	while (true)
 	{
-		std::wifstream ifs("out.txt");
-		std::wstring line;
-
 		while (std::getline(ifs, line))
 			std::wcout << "File content: " << line << std::endl;
-		Sleep(3000);
+		output << line;
+		std::wcout << "Sexe" << std::endl;
+		Sleep(1000);
 	}
+}
+
+void	test2()
+{
+	
 }
 
 //	TODO: add subprocess to handle text display
@@ -94,6 +104,11 @@ int main()
 	_setmode(_fileno(stdout),_O_U16TEXT);
 	std::thread t1(test);
 	// t1.join();
+	// while(true)
+	// {
+	// 	std::wcout << "Main" << std::endl;
+	// 	Sleep(4000);
+	// }
 	while(true)
 	{
 		std::vector<DWORD> pids;
@@ -105,10 +120,11 @@ int main()
 
 		PROCESSENTRY32W entry;
 		entry.dwSize = sizeof entry;
-		std::cout << "Fack" << std::endl;
+		std::wcout << "Fack" << std::endl;
 
 		if (!Process32FirstW(snap, &entry))
 		{
+			std::wcout << "WTF" << std::endl;
 			cleanupSnap();
 			return 0;
 		}
