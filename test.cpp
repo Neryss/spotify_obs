@@ -11,10 +11,12 @@
 #include <locale.h>
 #include <io.h>
 #include <fcntl.h>
+#include <mutex>
 
 std::wstring current = L"unknown";
 std::wstring x_title = L"unknown";
 std::string	path_output = "./out.txt";
+std::mutex fileMutex;
 
 bool found(const PROCESSENTRY32W &entry)
 {
@@ -55,6 +57,7 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 
 void	writeToFile()
 {
+	std::lock_guard<std::mutex> lock(fileMutex);
 	std::wofstream	output(path_output);
 	const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
 	output.imbue(utf8_locale);
@@ -67,6 +70,7 @@ void	writeToFile()
 
 void	noSong()
 {
+	std::lock_guard<std::mutex> lock(fileMutex);
 	// std::wcout << "\x1B[2J\x1B[H";
 	std::wcout << "Nothing currently playing, or window closed" << std::endl;
 	std::wofstream	output(path_output);
@@ -85,12 +89,16 @@ void	test()
 	ifs.imbue(utf8_locale);
 	while (true)
 	{
-		while (std::getline(ifs, line))
-			std::wcout << "File content: " << line << std::endl;
+		std::lock_guard<std::mutex> lock(fileMutex);
+		std::getline(ifs, line);
+		if (!ifs)
+			break;
 		output << line;
+		std::wcout << "File content: " << line << std::endl;
 		std::wcout << "Sexe" << std::endl;
 		Sleep(1000);
 	}
+	output.close();
 }
 
 void	test2()
