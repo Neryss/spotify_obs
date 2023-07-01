@@ -1,0 +1,5 @@
+output="out.txt"
+display="display.txt"
+limit=40
+animation_speed=1
+poll_rate=5

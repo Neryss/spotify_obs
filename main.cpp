@@ -26,13 +26,81 @@ std::string	output_path = "./out.txt";
 std::string	display_path = "./display.txt";
 
 // You can change the char limit before the animation starts looping
-int				char_limit = 40;
+int			char_limit = 40;
 
 // number of seconds between each animation step
-int				animation_speed = 1;
+int			animation_speed = 1;
 
 // number of seconds between each Windows snapshot
-int				title_poll_rate = 5;
+int			title_poll_rate = 5;
+
+// TODO: fix ugly thingy
+int	parseConfig()
+{
+	std::ifstream	conf("config_file.cf");
+	if (!conf)
+	{
+		std::cout << "Error reading config file" << std::endl;
+		exit(1);
+	}
+	std::string					tmp;
+	while (std::getline(conf, tmp))
+	{
+		unsigned int	name = tmp.find("=");
+		std::string		s_name = tmp.substr(0, name);
+		unsigned int	first = tmp.find("\"");
+		unsigned int	last = tmp.find_last_of("\"");
+		if (s_name == "output")
+		{
+			output_path = tmp.substr(first + 1, last - first - 1 );
+			std::cout << "output: " << output_path << std::endl;
+		}
+		else if (s_name == "display")
+		{
+			display_path = tmp.substr(first + 1, last - first - 1 );
+			std::cout << "display: " << display_path << std::endl;
+		}
+		else if (s_name == "limit")
+		{
+			std::string	part = tmp.substr(name + 1, tmp.length() - name);
+			if (!std::any_of(part.begin(), part.end(), ::isdigit))
+			{
+				std::cout << part << " isn't a number" << std::endl;
+				exit(1);
+			}
+			char_limit = std::stoi(part);
+			std::cout << "limit: " << char_limit << std::endl;
+		}
+		else if (s_name == "animation_speed")
+		{
+			std::string	part = tmp.substr(name + 1, tmp.length() - name);
+			if (!std::any_of(part.begin(), part.end(), ::isdigit))
+			{
+				std::cout << part << " isn't a number" << std::endl;
+				exit(1);
+			}
+			animation_speed = std::stoi(part);
+			std::cout << "anim_speed: " << animation_speed << std::endl;
+		}
+		else if (s_name == "poll_rate")
+		{
+			std::string	part = tmp.substr(name + 1, tmp.length() - name);
+			if (!std::any_of(part.begin(), part.end(), ::isdigit))
+			{
+				std::cout << part << " isn't a number" << std::endl;
+				exit(1);
+			}
+			title_poll_rate = std::stoi(part);
+			std::cout << "poll_rate: " << title_poll_rate << std::endl;
+		}
+		else
+		{
+			std::cout << "Wrong field name: " << tmp << std::endl;
+			std::cout << "refer to the readme.MD" << std::endl;
+		}
+	}
+	return (0);
+}
 
 bool found(const PROCESSENTRY32W &entry)
 {
@@ -41,9 +109,9 @@ bool found(const PROCESSENTRY32W &entry)
 
 BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 {
-	const auto &pids = *reinterpret_cast<std::vector<DWORD> *>(lParam);
+	const auto	&pids = *reinterpret_cast<std::vector<DWORD> *>(lParam);
 
-	DWORD winId;
+	DWORD		winId;
 	GetWindowThreadProcessId(hwnd, &winId);
 
 	for (DWORD pid : pids)
@@ -72,8 +140,8 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 
 void	writeToFile()
 {
-	std::wofstream	output(output_path);
-	const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
+	std::wofstream		output(output_path);
+	const std::locale	utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
 	output.imbue(utf8_locale);
 	output << x_title;
 	std::wcout << "\x1B[2J\x1B[H";
@@ -92,17 +160,17 @@ void	noSong()
 	current = x_title;
 }
 
-
+// Used for animate ft
 std::wstring	actual = L"None";
 bool			first = true;
 bool			has_changed = false;
 
-void	test()
+void	animate()
 {
-	std::wifstream ifs;
-	std::wstring line;
-	std::wstring	str;
-	const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
+	std::wifstream		ifs;
+	std::wstring		line;
+	std::wstring		str;
+	const std::locale	utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
 	while (true)
 	{
 		ifs.open(output_path);
@@ -150,11 +218,20 @@ void	test()
 	}
 }
 
-//	TODO: add subprocess to handle text display
-int main()
+int main(int argc, char **argv)
 {
+	bool	debug = false;
+	if (!argc > 1)
+		if (!strcmp(argv[1], "-debug"))
+			debug = true;
+	parseConfig();
+	if (debug)
+	{
+		std::cout << "return because of debug mode" << std::endl;
+		exit(1);
+	}
 	_setmode(_fileno(stdout),_O_U16TEXT);
-	std::thread t1(test);
+	std::thread	t1(animate);
 	while(true)
 	{
 		std::vector<DWORD> pids;
@@ -183,6 +260,6 @@ int main()
 			writeToFile();
 		else if (x_title == L"Spotify Premium")
 			noSong();
-		Sleep(5000);
+		Sleep(title_poll_rate * 1000);
 	}
 }
