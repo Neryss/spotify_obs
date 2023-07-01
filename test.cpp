@@ -12,9 +12,27 @@
 #include <io.h>
 #include <fcntl.h>
 
+
+// Do not change that
 std::wstring current = L"unknown";
 std::wstring x_title = L"unknown";
-std::string	path_output = "./out.txt";
+
+/*
+// If you want to change output paths you can do so here
+// <path_ouput> is the "buffer" file to read the complete title
+// <display_path> is what you should read from OBS to get the animation
+*/
+std::string	output_path = "./out.txt";
+std::string	display_path = "./display.txt";
+
+// You can change the char limit before the animation starts looping
+int				char_limit = 40;
+
+// number of seconds between each animation step
+int				animation_speed = 1;
+
+// number of seconds between each Windows snapshot
+int				title_poll_rate = 5;
 
 bool found(const PROCESSENTRY32W &entry)
 {
@@ -39,7 +57,6 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 			{
 				std::wstring tmp(title);
 				tmp.pop_back();
-				printf("%s\n", tmp);
 				if (tmp != L"Default IME" && tmp != L"GDI+ Window (Spotify.exe)" && tmp != L"MSCTFIME UI")
 				{
 					x_title = title;
@@ -55,11 +72,11 @@ BOOL CALLBACK enumWindowsProc(HWND hwnd, LPARAM lParam)
 
 void	writeToFile()
 {
-	std::wofstream	output(path_output);
+	std::wofstream	output(output_path);
 	const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
 	output.imbue(utf8_locale);
 	output << x_title;
-	// std::wcout << "\x1B[2J\x1B[H";
+	std::wcout << "\x1B[2J\x1B[H";
 	std::wcout << "currently playing: \n"  << x_title;
 	output.close();
 	current = x_title;
@@ -67,39 +84,70 @@ void	writeToFile()
 
 void	noSong()
 {
-	// std::wcout << "\x1B[2J\x1B[H";
+	std::wcout << "\x1B[2J\x1B[H";
 	std::wcout << "Nothing currently playing, or window closed" << std::endl;
-	std::wofstream	output(path_output);
+	std::wofstream	output(output_path);
 	output << "";
 	output.close();
 	current = x_title;
 }
 
+
+std::wstring	actual = L"None";
+bool			first = true;
+bool			has_changed = false;
+
 void	test()
 {
 	std::wifstream ifs;
 	std::wstring line;
+	std::wstring	str;
 	const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
 	while (true)
 	{
-		ifs.open("out.txt");
+		ifs.open(output_path);
 		ifs.imbue(utf8_locale);
-		std::wofstream display("test.txt", std::ios::trunc);
+		std::wofstream display(display_path, std::ios::trunc);
 		display.imbue(utf8_locale);
 		std::getline(ifs, line);
-		display << line.c_str();
+		if (line.length() == 0)
+		{
+			display << L"";
+			display.close();
+		}
+		if (actual != line)
+		{
+			str = line;
+			actual = str;
+			has_changed = true;
+		}
+		if (!first && !has_changed && str.length() > char_limit)
+		{
+			wchar_t tmp = str[0];
+			str = str.substr(1, str.length()) + tmp;
+		}
+		else if ((first || has_changed) && str.length() > char_limit)
+		{
+			has_changed = false;
+			str.append(L" | ");
+		}
+		if (str.length() > char_limit)
+		{
+			std::wstring	tmp = L"♫ ";
+			tmp.append(str.substr(0, char_limit));
+			display << tmp;
+		}
+		else
+		{
+			std::wstring	tmp = L"♫ ";
+			tmp.append(str);
+			display << tmp;
+		}
+		first = false;
 		display.close();
 		ifs.close();
-		// display.flush();
-		std::wcout << "File content: " << line << std::endl;
-		std::wcout << "Sexe" << std::endl;
-		Sleep(1000);
+		Sleep(animation_speed * 1000);
 	}
-}
-
-void	test2()
-{
-	
 }
 
 //	TODO: add subprocess to handle text display
@@ -107,12 +155,6 @@ int main()
 {
 	_setmode(_fileno(stdout),_O_U16TEXT);
 	std::thread t1(test);
-	// t1.join();
-	// while(true)
-	// {
-	// 	std::wcout << "Main" << std::endl;
-	// 	Sleep(4000);
-	// }
 	while(true)
 	{
 		std::vector<DWORD> pids;
@@ -124,11 +166,9 @@ int main()
 
 		PROCESSENTRY32W entry;
 		entry.dwSize = sizeof entry;
-		std::wcout << "Fack" << std::endl;
 
 		if (!Process32FirstW(snap, &entry))
 		{
-			std::wcout << "WTF" << std::endl;
 			cleanupSnap();
 			return 0;
 		}
