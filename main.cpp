@@ -1,3 +1,8 @@
+/*
+// Don't gatekeep, share it!
+// @neryss002
+*/
+
 #include <iostream>
 #include <fstream>
 #include <string>

@@ -23,7 +23,10 @@ A minimalist approach to a spotify display for OBS
 
 ## Usage
 You just have to run `spotify_obs.exe` which will pop a terminal with the current song title and artist.
+
 Add a text source to OBS, select the output file and that's it! You can customize it with font, colors inside OBS.
+
+You don't need to credit me or anything, but you can add a small note on your stream panel if you wish to do so! Don't gatekeep, share it!
 
 ## Config file
 You will find a [config file](./config_file.cf) which is an example of how you can format things and will follow the following patterns:
@@ -44,10 +47,12 @@ If you duplicate any field, it will take the second value, if you add another fi
 
 You can start the program with `./spotify_obs.exe -debug` if you have any issue with the program. It will print the config values the program got from the config file.
 
-## Issues
+## Issues/Suggestions
 
-If you have any issues with the program, you can contact me or open an issue on github, with the debug output.
+If you have any issues with the program, you can contact [me](https://twitter.com/Neryss002) or open an issue on github, with the debug output.
+I will be glad to help!
 
+Same goes if you want to suggest something!
 #
 
 ## What's next? Why does it exist?
