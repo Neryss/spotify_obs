@@ -78,19 +78,19 @@ void	noSong()
 void	test()
 {
 	std::wifstream ifs;
-	ifs.open("out.txt");
-	std::wofstream display("test.txt");
-	if (!ifs.is_open())
-	{
-		std::wcout << "Error before" << std::endl;
-		return ;
-	}
 	std::wstring line;
 	const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
-	display.imbue(utf8_locale);
-	ifs.imbue(utf8_locale);
 	while (true)
 	{
+		ifs.open("out.txt");
+		if (!ifs.is_open())
+		{
+			std::wcout << "Error before" << std::endl;
+			return ;
+		}
+		ifs.imbue(utf8_locale);
+		std::wofstream display("test.txt", std::ios::trunc);
+		display.imbue(utf8_locale);
 		std::getline(ifs, line);
 		if (!ifs.is_open())
 		{
@@ -102,13 +102,15 @@ void	test()
 			std::wcout << "Error display" << std::endl;
 			break;
 		}
-		display.write(line.c_str(), line.size());
-		display.flush();
+		// display.write(line.c_str(), line.size());
+		display << line.c_str();
+		display.close();
+		ifs.close();
+		// display.flush();
 		std::wcout << "File content: " << line << std::endl;
 		std::wcout << "Sexe" << std::endl;
 		Sleep(1000);
 	}
-	display.close();
 }
 
 void	test2()
