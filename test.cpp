@@ -83,26 +83,10 @@ void	test()
 	while (true)
 	{
 		ifs.open("out.txt");
-		if (!ifs.is_open())
-		{
-			std::wcout << "Error before" << std::endl;
-			return ;
-		}
 		ifs.imbue(utf8_locale);
 		std::wofstream display("test.txt", std::ios::trunc);
 		display.imbue(utf8_locale);
 		std::getline(ifs, line);
-		if (!ifs.is_open())
-		{
-			std::wcout << "Error" << std::endl;
-			break;
-		}
-		if (!display.is_open())
-		{
-			std::wcout << "Error display" << std::endl;
-			break;
-		}
-		// display.write(line.c_str(), line.size());
 		display << line.c_str();
 		display.close();
 		ifs.close();
