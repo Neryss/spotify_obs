@@ -79,7 +79,7 @@ void	test()
 {
 	std::wifstream ifs;
 	ifs.open("out.txt");
-	std::wofstream output("test.txt");
+	std::wofstream display("test.txt");
 	if (!ifs.is_open())
 	{
 		std::wcout << "Error before" << std::endl;
@@ -87,7 +87,7 @@ void	test()
 	}
 	std::wstring line;
 	const std::locale utf8_locale = std::locale(std::locale(), new std::codecvt_utf8<wchar_t>());
-	output.imbue(utf8_locale);
+	display.imbue(utf8_locale);
 	ifs.imbue(utf8_locale);
 	while (true)
 	{
@@ -97,17 +97,18 @@ void	test()
 			std::wcout << "Error" << std::endl;
 			break;
 		}
-		if (!output.is_open())
+		if (!display.is_open())
 		{
-			std::wcout << "Error output" << std::endl;
+			std::wcout << "Error display" << std::endl;
 			break;
 		}
-		output << line;
+		display.write(line.c_str(), line.size());
+		display.flush();
 		std::wcout << "File content: " << line << std::endl;
 		std::wcout << "Sexe" << std::endl;
 		Sleep(1000);
 	}
-	output.close();
+	display.close();
 }
 
 void	test2()
