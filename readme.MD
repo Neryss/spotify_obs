@@ -22,7 +22,7 @@ A minimalist approach to a spotify display for OBS
 #
 
 ## Usage
-You just have to run `spotify_obs.exe` which will pop a terminal with the current song title and artist.
+Open Powershell at the folder location (double clicking the exe will make it crash I'm working on it), and use `./spotify_obs.exe`
 
 Add a text source to OBS, select the output file and that's it! You can customize it with font, colors inside OBS.
 
